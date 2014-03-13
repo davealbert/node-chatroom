@@ -1,0 +1,78 @@
+<!DOCTYPE HTML>
+<html lang="en">
+   <head>
+     <meta charset="UTF-8">
+     <title>Chat Example</title>
+     <style type="text/css">
+       #messages {
+         background-color: #e2e2e2;
+         height: 300px;
+         overflow: auto;
+       }
+       #news {
+         border: 1px solid black;
+         height: 100px;
+       }
+     </style>
+   </head>
+   <body>
+
+      <form id="join-room-form">
+        <input size="50" type="text" id="join-room-value" value="lobby"></input>
+        <input type="submit" text="join"></input>
+      </form>
+      <div id="messages"></div>
+      <div id="news"></div>
+      <form id="chat-message-form">
+        <input size="50" type="text" id="chat-message-value" placeholder="message" ></input>
+        <input type="submit" text="join"></input>
+      </form>
+
+
+      <script src="/socket.io/socket.io.js"></script>
+      <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
+      <script type="text/javascript">
+
+        var currentRoom = 'lobby';
+        var socket = io.connect('http://localhost');
+        $(document).ready(function(){
+
+           // Initially Connect to the socket server
+           socket.emit('subscribe', {room: currentRoom});
+
+           // Listen for an event called News and put its contents
+           // in '#incoming-chat-window'
+           socket.on('news', function (data) {
+              $('#news').append(data + '<br/>');
+           });
+
+           socket.on('new message', function (data) {
+              $('#messages').append(data + '<br/>');
+           });
+
+           $('#join-room-form').submit(function(e){
+              join_room(e);
+           });
+
+           $('#chat-message-form').submit(function(e){
+              send_message(e);
+           });
+
+        });
+
+        function join_room(e){
+           e.preventDefault();
+           socket.emit('unsubscribe', {room: currentRoom});
+           currentRoom = $('#join-room-value').val();
+           socket.emit('subscribe', {room: currentRoom});
+        };
+
+        function send_message(e){
+           e.preventDefault();
+           socket.emit('send room',{room: currentRoom, msg: $('#chat-message-value').val()});
+           $('#chat-message-value').val('');
+        };
+
+      </script>
+   </body>
+</html>
